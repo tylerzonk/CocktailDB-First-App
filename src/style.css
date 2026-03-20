@@ -1,0 +1,147 @@
+.hidden {
+    display: none;
+}
+
+body {
+    background-color: #1a1a2e;
+    color: #f0f0f0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    margin: 0;
+}
+
+h1, h2, h3 {
+    color: #d6d6d6;
+    font-family: Arial, sans-serif;
+}
+
+p {
+    color: #bdbdbd;
+    font-family: Arial, sans-serif;
+}
+
+
+#navbar {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "home-button . search-form";
+    align-items: center;
+    padding: 1% 15% 1% 15%;
+    border-bottom: .4vw solid white;
+}
+
+#home-button {
+    display: inline-block;
+    grid-area: home-button;
+}
+
+#home-button img {
+    height: 4vw;
+    width: auto;
+}
+
+#search-form {
+    display: flex;
+    align-items: center;
+    gap: 1%;
+    grid-area: search-form;
+    justify-self: end;
+}
+
+#search-input {
+    width: 25vw;
+    height: 4vw;
+    padding: 0 1vw;
+    border: .2vw solid #ccc;
+    border-radius: 1vw;
+    font-size: 2vw;
+    font-style: italic;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#search-input:focus {
+    border-color: #4f46e5;
+}
+
+#search-form .button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 4vw;
+    width: 9vw;
+    background-color: #494957;
+    color: white;
+    border: none;
+    border-radius: 1vw;
+    font-size: 2vw;
+    cursor: pointer;
+}
+
+#search-form .button:hover {
+    background-color: #a1a1a1;
+}
+
+.page {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+        "heading"
+        "cards";
+    padding: 1% 15%;
+}
+
+.header {
+    grid-area: heading;
+    text-align: left;
+    margin: 3vw 0 0 2vw;
+    font-size: 2.5vw;
+}
+
+.cocktail-grid {
+    display: grid;
+    grid-area: cards;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5%;
+    padding: 2% ;
+}
+
+.cocktail-card {
+    display: grid;
+    grid-template-rows: 1fr auto auto;
+    grid-template-areas:
+        "image"
+        "name"
+        "ingredients";
+        aspect-ratio: 3/4;
+    container-type: inline-size;
+    border: .3vw solid #dadada;
+    border-radius: 1vw;
+    overflow: hidden;
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+}
+
+.cocktail-card:hover {
+    box-shadow: 0 .5vw 1.5vw #ffffff;
+}
+
+.cocktail-card img {
+    grid-area: image;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.cocktail-card h3 {
+    grid-area: name;
+    margin: 4cqi 3cqi 1cqi;
+    font-size: 10cqi;
+}
+
+.cocktail-card .ingredients-preview {
+    grid-area: ingredients;
+    margin: 0 3cqi 5cqi;
+    color: #ffffff;
+    font-size: 5.5cqi;
+}

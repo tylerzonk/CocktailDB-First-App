@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/Cocktail.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cocktail Search</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script type="module" src="/src/main.ts"></script>
+</head>
+<body>
+
+  <nav id="navbar">
+    <a id="home-button" href="/">
+      <img src="LogoDark.png" alt="Home" />
+    </a>
+    <form id="search-form">
+      <input type="search" id="search-input" placeholder="Enter search here..."/>
+      <button class="button">Search</button>
+    </form>
+  </nav>
+
+  <section id="page-home" class="page">
+    <h1 id="home-heading" class="header">Popular Cocktails</h1>
+    <div id="home-grid" class="cocktail-grid">
+    </div>
+  </section>
+
+  <section id="page-search" class="page hidden">
+    <h2 id="search-heading" class="header">Results for "..."</h2>
+    <div id="search-grid" class="cocktail-grid">
+    </div>
+  </section>
+
+  <section id="page-detail" class="page hidden">
+    <div id="detail-content">
+    </div>
+  </section>
+
+</body>
+</html>
