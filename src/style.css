@@ -43,7 +43,7 @@ p {
     grid-area: favorites-button;
     background: none;
     border: none;
-    color: gold;
+    color: #ffffff;
     font-size: 3vw;
     cursor: pointer;
     margin-right: 1vw;
@@ -281,7 +281,6 @@ p {
 
 .cocktail-card {
     position: relative;
-    /* ...rest of your existing card styles unchanged */
 }
 
 .card-fav {
@@ -291,12 +290,12 @@ p {
     background: none;
     border: none;
     font-size: 8cqi;
-    color: rgb(255, 255, 255);
+    color: #ffffff;
     cursor: pointer;
     padding: 0;
     line-height: 1;
     transition: transform 0.1s;
-    text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
+    text-shadow: 0 0 6px #000000;
 }
 
 .card-fav:hover {

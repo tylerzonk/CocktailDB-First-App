@@ -40,10 +40,6 @@ type RawCocktail = {
     strMeasure15: string | null;
 };
 
-type SearchResponse = {
-    drinks: RawCocktail[] | null;
-};
-
 type Ingredients = {
     name: string;
     measure: string;
@@ -58,4 +54,8 @@ type Cocktail = {
     instructions: string;
     thumbnail: string;
     ingredients: Ingredients[];
+};
+
+type SearchResponse = {
+    drinks: RawCocktail[] | null;
 };
