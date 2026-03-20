@@ -35,7 +35,7 @@ function transformCocktail(raw: RawCocktail): Cocktail {
 }
 
 export async function searchCocktails(query: string): Promise<Cocktail[] | Error> {
-    const url = `${BASE_URL}/search.php?s=${encodeURIComponent(query)}`;
+    const url = `${BASE_URL}/search.php?s=${encodeURI(query)}`;
 
     try {
         const response = await fetch(url);
@@ -52,16 +52,44 @@ export async function searchCocktails(query: string): Promise<Cocktail[] | Error
         return data.drinks.map(transformCocktail)
 
     } catch (e) {
-        // "e" is typed as "unknown" in TypeScript — you can't just use it.
-        // You have to check if it's actually an Error first.
         if (e instanceof Error) {
             return e;
         } else {
-            // This probably won't happen, but TypeScript makes us handle it
             return new Error(`Unknown error occurred: ${e}`);
         }
     }
 }
+
+export async function searchByIngredient(ingredient: string): Promise<Cocktail[] | Error> {
+    const url = `${BASE_URL}/filter.php?i=${encodeURI(ingredient)}`;
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = (await response.json()) as SearchResponse;
+
+        if (!data.drinks) {
+            return [];
+        }
+
+        const results = await Promise.all(
+            data.drinks.slice(0, 12).map(d => getCocktailByID(d.idDrink))
+        );
+
+        return results.filter(r => !(r instanceof Error)) as Cocktail[];
+
+    } catch (e) {
+        if (e instanceof Error) {
+            return e;
+        } else {
+            return new Error(`Unknown error occurred: ${e}`);
+        }
+    }
+}
+
 
 export async function getCocktailByID(id: string): Promise<Cocktail | Error> {
     const url = `${BASE_URL}/lookup.php?i=${id}`;

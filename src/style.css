@@ -2,6 +2,7 @@
     display: none;
 }
 
+
 body {
     background-color: #1a1a2e;
     color: #f0f0f0;
@@ -22,21 +23,36 @@ p {
 
 #navbar {
     display: grid;
-    grid-template-columns: auto 1fr auto;
-    grid-template-areas: "home-button . search-form";
+    grid-template-columns: auto 1fr auto auto;
+    grid-template-areas: "home-button . favorites-button search-form";
     align-items: center;
     padding: 1% 15% 1% 15%;
     border-bottom: .4vw solid white;
 }
 
-#home-button {
-    display: inline-block;
-    grid-area: home-button;
-}
-
 #home-button img {
     height: 4vw;
-    width: auto;
+    transition: filter .2s ease;
+}
+
+#home-button:hover img {
+    filter: drop-shadow(0 0 .2vw #ffffff);
+}
+
+#favorites-button {
+    grid-area: favorites-button;
+    background: none;
+    border: none;
+    color: gold;
+    font-size: 3vw;
+    cursor: pointer;
+    margin-right: 1vw;
+    margin-bottom: .3vw;
+    transition: transform 0.2s;
+}
+
+#favorites-button:hover {
+    transform: scale(1.1);
 }
 
 #search-form {
@@ -48,12 +64,12 @@ p {
 }
 
 #search-input {
-    width: 25vw;
-    height: 4vw;
+    width: 27vw;
+    height: 3vw;
     padding: 0 1vw;
     border: .2vw solid #ccc;
     border-radius: 1vw;
-    font-size: 2vw;
+    font-size: 1.5vw;
     font-style: italic;
     outline: none;
     transition: border-color 0.2s;
@@ -67,13 +83,13 @@ p {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 4vw;
-    width: 9vw;
+    height: 3vw;
+    width: 8vw;
     background-color: #494957;
     color: white;
     border: none;
     border-radius: 1vw;
-    font-size: 2vw;
+    font-size: 1.7vw;
     cursor: pointer;
 }
 
@@ -94,7 +110,7 @@ p {
     grid-area: heading;
     text-align: left;
     margin: 3vw 0 0 2vw;
-    font-size: 2.5vw;
+    font-size: 1.6vw;
 }
 
 .cocktail-grid {
@@ -114,15 +130,15 @@ p {
         "ingredients";
         aspect-ratio: 3/4;
     container-type: inline-size;
-    border: .3vw solid #dadada;
+    border: .25vw solid #dadada;
     border-radius: 1vw;
     overflow: hidden;
     cursor: pointer;
-    transition: box-shadow 0.2s;
+    transition: box-shadow 0.3s;
 }
 
 .cocktail-card:hover {
-    box-shadow: 0 .5vw 1.5vw #ffffff;
+    box-shadow: 0 .5vw 1vw #ffffff;
 }
 
 .cocktail-card img {
@@ -136,7 +152,8 @@ p {
 .cocktail-card h3 {
     grid-area: name;
     margin: 4cqi 3cqi 1cqi;
-    font-size: 10cqi;
+    font-size: 8cqi;
+    text-overflow: ellipsis;
 }
 
 .cocktail-card .ingredients-preview {
@@ -144,4 +161,144 @@ p {
     margin: 0 3cqi 5cqi;
     color: #ffffff;
     font-size: 5.5cqi;
+}
+
+#detail-content {
+    padding: 2% clamp(2%, 10%, 15%)
+}
+
+.detail-title {
+    text-align: center;
+    margin: 0 0 2% 0;
+    font-size: 3vw;
+}
+
+.detail-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "image info";
+    gap: 2%;
+    align-items: start;
+}
+
+.detail-image {
+    width: 100%;
+    border-radius: .5vw;
+}
+
+#detail-content {
+    padding: 2% clamp(2%, 10%, 15%);
+}
+
+.detail-title-row {
+    display: flex;
+    align-items: center;
+    gap: 1vw;
+    margin-bottom: 2%;
+}
+
+.detail-title {
+    margin: 0;
+    font-size: 3vw;
+}
+
+.fav-toggle {
+    background: none;
+    border: none;
+    font-size: 3vw;
+    color: gold;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: transform 0.1s;
+}
+
+.fav-toggle:hover {
+    transform: scale(1.2);
+}
+
+.detail-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2%;
+    align-items: start;
+}
+
+.detail-image {
+    width: 100%;
+    border-radius: .5vw;
+}
+
+.detail-info {
+    text-align: left;
+}
+
+.detail-meta {
+    color: #c7c7c7;
+    font-size: 1.2vw;
+}
+
+.detail-ingredients {
+    padding-left: 1.5vw;
+    font-size: 1.2vw;
+    line-height: 2;
+}
+
+.detail-instructions {
+    font-size: 1.2vw;
+    line-height: 1.8;
+    color: #bdbdbd;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+@media (max-width: 768px) {
+    .detail-body {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-image {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        display: block;
+    }
+
+    .detail-title {
+        font-size: 5vw;
+    }
+
+    .fav-toggle {
+        font-size: 5vw;
+    }
+
+    .detail-meta,
+    .detail-ingredients,
+    .detail-instructions {
+        font-size: 3vw;
+    }
+}
+
+.cocktail-card {
+    position: relative;
+    /* ...rest of your existing card styles unchanged */
+}
+
+.card-fav {
+    position: absolute;
+    top: 4%;
+    right: 4%;
+    background: none;
+    border: none;
+    font-size: 8cqi;
+    color: rgb(255, 255, 255);
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: transform 0.1s;
+    text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
+}
+
+.card-fav:hover {
+    transform: scale(1.2);
 }

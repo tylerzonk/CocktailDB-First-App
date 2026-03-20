@@ -1,15 +1,21 @@
+// main.ts
+
 import './style.css'
-import { getCocktailByID, searchCocktails } from "./api.ts";
+import { getCocktailByID, searchCocktails, searchByIngredient } from "./api.ts";
 
 let searchResults: Cocktail[] = [];
 let homePageCocktails: Cocktail[] = [];
-let currentPage: "home" | "search" | "detail" = "home";
+let currentPage: "home" | "search" | "detail" | "favorites" = "home";
 let currentDetail: Cocktail | null = null;
+let favoriteCocktails: Cocktail[] = [];
 
 const searchForm = document.querySelector<HTMLFormElement>("#search-form");
 const searchInput = document.querySelector<HTMLInputElement>("#search-input");
 const homeButton = document.querySelector<HTMLButtonElement>("#home-button");
 const homeGrid = document.querySelector<HTMLElement>("#home-grid");
+const favoritesButton = document.querySelector<HTMLButtonElement>("#favorites-button")
+const favoritesGrid = document.querySelector<HTMLElement>("#favorites-grid");
+const favoritesSection = document.querySelector<HTMLElement>("#page-favorites");
 const searchGrid = document.querySelector<HTMLElement>("#search-grid");
 const searchHeading = document.querySelector<HTMLElement>("#search-heading");
 const detailContent = document.querySelector<HTMLElement>("#detail-content");
@@ -22,55 +28,66 @@ const PRESET_IDS = ["11007", "11000", "11001", "11002", "11003", "17222"];
 
 
 function render(): void {
-    // Sanity check: if any critical element is missing, bail out early.
-    // This means you'll never hit a null reference deeper in the function.
     if (
         !homeGrid || !searchGrid || !searchHeading ||
-        !detailContent || !homeSection || !searchSection || !detailSection
+        !detailContent || !homeSection || !searchSection ||
+        !detailSection || !favoritesSection || !favoritesGrid
     ) {
         return;
     }
 
-    // Show/hide pages based on currentPage state
     switch (currentPage) {
         case "home":
             homeSection.style.display = "block";
             searchSection.style.display = "none";
             detailSection.style.display = "none";
+            favoritesSection.style.display = "none";
             renderCards(homeGrid, homePageCocktails);
             break;
         case "search":
             homeSection.style.display = "none";
             searchSection.style.display = "block";
             detailSection.style.display = "none";
+            favoritesSection.style.display = "none";
             renderCards(searchGrid, searchResults);
             break;
         case "detail":
             homeSection.style.display = "none";
             searchSection.style.display = "none";
             detailSection.style.display = "block";
+            favoritesSection.style.display = "none";
             renderDetail();
+            break;
+        case "favorites":
+            homeSection.style.display = "none";
+            searchSection.style.display = "none";
+            detailSection.style.display = "none";
+            favoritesSection.style.display = "block";
+            renderCards(favoritesGrid, favoriteCocktails);
             break;
     }
 }
 
 function createCocktailCard(cocktail: Cocktail): string {
     const ingredientPreview = cocktail.ingredients
-        .slice(0,3)
+        .slice(0, 3)
         .map(ing => ing.name)
         .join(", ");
+    const isFav = favoriteCocktails.some(c => c.id === cocktail.id);
 
-        return `
-            <div class="cocktail-card" data-id="${cocktail.id}">
-                <img src="${cocktail.thumbnail}/medium" alt="${cocktail.name}" />
-                <h3>${cocktail.name}</h3>
-                <p class="ingredients-preview">${ingredientPreview}</p>
-            </div>
-        `;
+    return `
+        <div class="cocktail-card" data-id="${cocktail.id}">
+            <img src="${cocktail.thumbnail}/medium" alt="${cocktail.name}" />
+            <h3>${cocktail.name}</h3>
+            <p class="ingredients-preview">${ingredientPreview}</p>
+            <button class="card-fav" data-id="${cocktail.id}">${isFav ? "★" : "☆"}</button>
+        </div>
+    `;
 }
 
 function renderCards(container: HTMLElement, cocktails: Cocktail[]): void {
-    const html = cocktails
+    const html = [...cocktails]
+        .sort((a, b) => b.name.localeCompare(a.name))
         .map(cocktail => createCocktailCard(cocktail))
         .join("");
     container.innerHTML = html;
@@ -80,26 +97,42 @@ function renderDetail(): void {
     if (!detailContent || !currentDetail) return;
 
     const cocktail = currentDetail;
+    const isFav = favoriteCocktails.some(c => c.id === cocktail.id);
     const ingredientsHTML = cocktail.ingredients
         .map(ing => `<li><strong>${ing.measure}</strong> ${ing.name}</li>`)
         .join("");
 
     detailContent.innerHTML = `
-        <img src="${cocktail.thumbnail}" alt="${cocktail.name}" class="detail-image" />
-        <h1>${cocktail.name}</h1>
-        <p class="detail-meta">${cocktail.category} · ${cocktail.glass} · ${cocktail.alcoholic}</p>
-        <h2>Ingredients</h2>
-        <ul class="detail-ingredients">${ingredientsHTML}</ul>
-        <h2>Instructions</h2>
-        <p class="detail-instructions">${cocktail.instructions}</p>
+        <div class="detail-title-row">
+            <h1 class="detail-title">${cocktail.name}</h1>
+            <button class="fav-toggle" data-id="${cocktail.id}">
+                ${isFav ? "★" : "☆"}
+            </button>
+        </div>
+        <div class="detail-body">
+            <div class="detail-image-wrapper">
+                <img src="${cocktail.thumbnail}" alt="${cocktail.name}" class="detail-image" />
+            </div>
+            <div class="detail-info">
+                <p class="detail-meta">${cocktail.category} · ${cocktail.glass} · ${cocktail.alcoholic}</p>
+                <h2>Ingredients</h2>
+                <ul class="detail-ingredients">${ingredientsHTML}</ul>
+                <h2>Instructions</h2>
+                <p class="detail-instructions">${cocktail.instructions}</p>
+            </div>
+        </div>
     `;
+
+    detailContent.querySelector(".fav-toggle")?.addEventListener("click", () => {
+        handleFavoriteToggle(cocktail);
+        renderDetail();
+    });
 }
 
 async function loadHomePage(): Promise<void> {
     const promises = PRESET_IDS.map(id => getCocktailByID(id));
     const results = await Promise.all(promises);
 
-    // Filter out any Errors, keep only successful Cocktails
     homePageCocktails = [];
     for (const result of results) {
         if (!(result instanceof Error)) {
@@ -111,31 +144,36 @@ async function loadHomePage(): Promise<void> {
 }
 
 async function handleSearch(event: SubmitEvent): Promise<void> {
-    // Stop the browser from doing its normal form submit (which reloads the page)
     event.preventDefault();
 
-    const query = searchInput?.value;
-    // If there's nothing there, just return and don't search
-    if (!query) {
-        return;
+    const query = searchInput?.value.trim();
+    if (!query) return;
+
+    const [byName, byIngredient] = await Promise.all([
+        searchCocktails(query),
+        searchByIngredient(query),
+    ]);
+
+    const seen = new Set<string>();
+    const merged: Cocktail[] = [];
+
+    for (const result of [byName, byIngredient]) {
+        if (result instanceof Error) continue;
+        for (const cocktail of result) {
+            if (!seen.has(cocktail.id)) {
+                seen.add(cocktail.id);
+                merged.push(cocktail);
+            }
+        }
     }
 
-    // Call the API
-    const results = await searchCocktails(query);
-
-    // Check if we got an error back — THIS is the pattern your teacher uses
-    if (results instanceof Error) {
-        alert("Couldn't fetch cocktails, try again later");
-        return;
-    }
-
-    // Update state, then render
-    searchResults = results;
     if (searchHeading) {
-        searchHeading.textContent = results.length === 0
+        searchHeading.textContent = merged.length === 0
             ? `No results for "${query}"`
             : `Results for "${query}"`;
     }
+
+    searchResults = merged;
     currentPage = "search";
     render();
 }
@@ -143,38 +181,29 @@ async function handleSearch(event: SubmitEvent): Promise<void> {
 async function handleCardClick(event: MouseEvent): Promise<void> {
     event.preventDefault();
     const target = event.target;
+    if (!target) return;
+    if (!(target instanceof HTMLElement)) return;
 
-    if (!target) {
+    if (target.classList.contains("card-fav")) {
+        const id = target.getAttribute("data-id");
+        if (!id) return;
+        const cocktail = [...homePageCocktails, ...searchResults, ...favoriteCocktails]
+            .find(c => c.id === id);
+        if (cocktail) handleFavoriteToggle(cocktail);
         return;
     }
 
-    // Make sure we're dealing with an HTML element (narrows the type)
-    if (!(target instanceof HTMLElement)) {
-        return;
-    }
-
-    // Walk up the DOM to find the card container
     const card = target.closest(".cocktail-card");
     if (!card) return;
-
-    // Get the cocktail ID from the data attribute
     const id = card.getAttribute("data-id");
-    // If no ID found, something is wrong with our HTML — throw so we notice
-    if (!id) {
-        throw new Error("Card element has no data-id attribute!");
-    }
+    if (!id) throw new Error("Card element has no data-id attribute!");
 
-    // Try to find the cocktail in our existing data first (avoids an API call)
-    const existing = [...homePageCocktails, ...searchResults].find(
-        (c) => c.id === id
-    );
-
+    const existing = [...homePageCocktails, ...searchResults].find(c => c.id === id);
     if (existing) {
         currentDetail = existing;
         currentPage = "detail";
         render();
     } else {
-        // Fall back to API lookup
         const result = await getCocktailByID(id);
         if (result instanceof Error) {
             alert("Couldn't load this drink. Try again later.");
@@ -186,25 +215,53 @@ async function handleCardClick(event: MouseEvent): Promise<void> {
     }
 }
 
+function save(): void {
+    const ids = favoriteCocktails.map(c => c.id);
+    localStorage.setItem("favorites", JSON.stringify(ids));
+}
+
+function load(): void {
+    const data = localStorage.getItem("favorites");
+    if (!data) return;
+    const ids = JSON.parse(data) as string[];
+    // Fetch full cocktail data for each saved ID
+    Promise.all(ids.map(id => getCocktailByID(id))).then(results => {
+        favoriteCocktails = results.filter(r => !(r instanceof Error)) as Cocktail[];
+        render();
+    });
+}
+
+function handleFavoriteToggle(cocktail: Cocktail): void {
+    const idx = favoriteCocktails.findIndex(c => c.id === cocktail.id);
+    if (idx === -1) {
+        favoriteCocktails.push(cocktail);
+    } else {
+        favoriteCocktails.splice(idx, 1);
+    }
+    save();
+    render();
+}
+
 async function main(): Promise<void> {
-    // Load home page data
+    load();
     await loadHomePage();
 
-    // Wire up the search form (submit event, not click!)
     searchForm?.addEventListener("submit", handleSearch);
 
-    // Wire up card clicks via event delegation on both grids
     homeGrid?.addEventListener("click", handleCardClick);
     searchGrid?.addEventListener("click", handleCardClick);
-
-    // Home button
+    favoritesGrid?.addEventListener("click", handleCardClick);
     homeButton?.addEventListener("click", (e) => {
         e.preventDefault();
         currentPage = "home";
         render();
     });
 
-    // Initial render
+    favoritesButton?.addEventListener("click", () => {
+        currentPage = "favorites";
+        render();
+    });
+
     render();
 }
 
